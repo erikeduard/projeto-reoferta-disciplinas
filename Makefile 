@@ -1,0 +1,201 @@
+# Makefile para Projeto de Otimização de Reoferta de Disciplinas
+
+.PHONY: help build up down logs clean test lint install dev prod
+
+# Variáveis
+COMPOSE_FILE = docker-compose.yml
+PROJECT_NAME = reoferta-disciplinas
+
+# Comando padrão
+help: ## Mostra esta mensagem de ajuda
+	@echo "Comandos disponíveis:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# Comandos de desenvolvimento
+dev: ## Inicia o ambiente de desenvolvimento
+	@echo "🚀 Iniciando ambiente de desenvolvimento..."
+	docker-compose up --build
+
+dev-bg: ## Inicia o ambiente de desenvolvimento em background
+	@echo "🚀 Iniciando ambiente de desenvolvimento em background..."
+	docker-compose up --build -d
+	@echo "✅ Serviços iniciados. Acesse http://localhost"
+
+# Comandos de produção
+prod: ## Inicia o ambiente de produção
+	@echo "🏭 Iniciando ambiente de produção..."
+	docker-compose -f $(COMPOSE_FILE) up --build -d
+	@echo "✅ Ambiente de produção iniciado"
+
+# Comandos Docker básicos
+build: ## Constrói todas as imagens Docker
+	@echo "🔨 Construindo imagens Docker..."
+	docker-compose build --no-cache
+
+up: ## Inicia todos os serviços
+	docker-compose up
+
+up-bg: ## Inicia todos os serviços em background
+	docker-compose up -d
+
+down: ## Para todos os serviços
+	@echo "⏹️  Parando serviços..."
+	docker-compose down
+
+restart: ## Reinicia todos os serviços
+	@echo "🔄 Reiniciando serviços..."
+	docker-compose restart
+
+# Comandos de logs
+logs: ## Mostra logs de todos os serviços
+	docker-compose logs -f
+
+logs-api: ## Mostra logs apenas do backend
+	docker-compose logs -f api
+
+logs-frontend: ## Mostra logs apenas do frontend
+	docker-compose logs -f frontend
+
+logs-nginx: ## Mostra logs apenas do nginx
+	docker-compose logs -f nginx
+
+# Comandos de limpeza
+clean: ## Remove containers parados e imagens não utilizadas
+	@echo "🧹 Limpando containers e imagens..."
+	docker-compose down
+	docker system prune -f
+
+clean-all: ## Remove tudo (CUIDADO: apaga volumes e dados)
+	@echo "⚠️  ATENÇÃO: Este comando irá apagar TODOS os dados!"
+	@read -p "Tem certeza? Digite 'yes' para continuar: " confirm && [ "$$confirm" = "yes" ]
+	docker-compose down -v
+	docker system prune -af
+	docker volume prune -f
+
+# Comandos de teste
+test: ## Executa testes no backend
+	@echo "🧪 Executando testes..."
+	docker-compose exec api npm test
+
+test-coverage: ## Executa testes com coverage
+	@echo "🧪 Executando testes com cobertura..."
+	docker-compose exec api npm run test:coverage
+
+# Comandos de lint
+lint: ## Executa linting no código
+	@echo "🔍 Verificando código..."
+	docker-compose exec api npm run lint
+	docker-compose exec frontend npm run lint
+
+lint-fix: ## Corrige problemas de linting automaticamente
+	@echo "🔧 Corrigindo código..."
+	docker-compose exec api npm run lint:fix
+	docker-compose exec frontend npm run lint:fix
+
+# Comandos de banco de dados e volumes
+backup: ## Cria backup dos dados
+	@echo "💾 Criando backup..."
+	mkdir -p backups
+	docker run --rm -v $(PROJECT_NAME)_uploads:/data -v $(PWD)/backups:/backup alpine tar czf /backup/uploads-$(shell date +%Y%m%d_%H%M%S).tar.gz -C /data .
+	docker run --rm -v $(PROJECT_NAME)_results:/data -v $(PWD)/backups:/backup alpine tar czf /backup/results-$(shell date +%Y%m%d_%H%M%S).tar.gz -C /data .
+
+restore: ## Restaura backup dos dados (especifique BACKUP_FILE)
+	@echo "📂 Restaurando backup..."
+	@if [ -z "$(BACKUP_FILE)" ]; then echo "❌ Especifique BACKUP_FILE=nome_do_arquivo"; exit 1; fi
+	docker run --rm -v $(PROJECT_NAME)_uploads:/data -v $(PWD)/backups:/backup alpine tar xzf /backup/$(BACKUP_FILE) -C /data
+
+# Comandos de debug
+shell-api: ## Acessa shell do container do backend
+	docker-compose exec api sh
+
+shell-frontend: ## Acessa shell do container do frontend
+	docker-compose exec frontend sh
+
+shell-nginx: ## Acessa shell do container do nginx
+	docker-compose exec nginx sh
+
+# Comandos de informação
+status: ## Mostra status dos containers
+	@echo "📊 Status dos containers:"
+	docker-compose ps
+
+stats: ## Mostra estatísticas de uso dos containers
+	@echo "📈 Estatísticas de uso:"
+	docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
+
+health: ## Verifica saúde da aplicação
+	@echo "🏥 Verificando saúde da aplicação..."
+	@curl -f http://localhost/health || echo "❌ Aplicação não está respondendo"
+	@curl -f http://localhost/api/health || echo "❌ API não está respondendo"
+
+# Comandos de instalação
+install-deps: ## Instala dependências localmente (para desenvolvimento)
+	@echo "📦 Instalando dependências do backend..."
+	cd backend && npm install
+	@echo "📦 Instalando dependências do frontend..."
+	cd frontend && npm install
+
+setup: ## Configuração inicial do projeto
+	@echo "⚙️  Configurando projeto..."
+	@if [ ! -f .env ]; then cp .env.example .env; echo "📝 Arquivo .env criado. Configure as variáveis necessárias."; fi
+	@mkdir -p backend/{uploads,results,logs}
+	@mkdir -p backups
+	@echo "✅ Projeto configurado!"
+
+# Comandos de deploy
+deploy-staging: ## Deploy para ambiente de staging
+	@echo "🚀 Deploy para staging..."
+	docker-compose -f docker-compose.yml -f docker-compose.staging.yml up --build -d
+
+deploy-prod: ## Deploy para ambiente de produção
+	@echo "🚀 Deploy para produção..."
+	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+# Comandos de monitoramento
+monitor: ## Inicia monitoramento básico
+	@echo "📊 Iniciando monitoramento..."
+	watch -n 5 'docker-compose ps && echo "" && docker stats --no-stream'
+
+# Comandos de segurança
+security-scan: ## Executa scan de segurança nas imagens
+	@echo "🔒 Executando scan de segurança..."
+	docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image $(PROJECT_NAME)_api
+	docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image $(PROJECT_NAME)_frontend
+
+# Comandos de documentação
+docs: ## Gera documentação da API
+	@echo "📚 Gerando documentação..."
+	docker-compose exec api npm run docs
+
+# Comandos úteis para CI/CD
+ci-build: ## Build para CI/CD
+	docker-compose build
+
+ci-test: ## Testes para CI/CD
+	docker-compose run --rm api npm test
+	docker-compose run --rm frontend npm test
+
+ci-deploy: ## Deploy para CI/CD
+	docker-compose up -d
+
+# Exemplos de uso
+example-upload: ## Exemplo de como fazer upload via API
+	@echo "📤 Exemplo de upload:"
+	@echo "curl -X POST -F 'planilha=@exemplo.xlsx' http://localhost/api/upload"
+
+example-optimize: ## Exemplo de como executar otimização via API
+	@echo "🧬 Exemplo de otimização:"
+	@echo 'curl -X POST -H "Content-Type: application/json" -d '"'"'{"filename":"arquivo.xlsx","parametros":{"maxDisciplinasReoferta":10}}'"'"' http://localhost/api/otimizar'
+
+# Informações do projeto
+info: ## Mostra informações do projeto
+	@echo "ℹ️  Informações do Projeto:"
+	@echo "Nome: $(PROJECT_NAME)"
+	@echo "Frontend: http://localhost"
+	@echo "API: http://localhost/api"
+	@echo "Nginx: http://localhost"
+	@echo ""
+	@echo "📁 Estrutura de URLs:"
+	@echo "  / - Frontend React"
+	@echo "  /api - Backend API"
+	@echo "  /health - Health check"

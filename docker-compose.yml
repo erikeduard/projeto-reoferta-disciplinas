@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Backend API (Node.js/Express)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reoferta-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - ./uploads:/app/uploads
+      - ./results:/app/results
+    restart: unless-stopped
+    networks:
+      - reoferta-network
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: reoferta-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - reoferta-network
+
+  # Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: reoferta-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - api
+    restart: unless-stopped
+    networks:
+      - reoferta-network
+
+volumes:
+  uploads:
+  results:
+
+networks:
+  reoferta-network:
+    driver: bridge
