@@ -352,4 +352,3 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ---
 
 ⭐ **Se este projeto foi útil para você, considere dar uma estrela!**
-
