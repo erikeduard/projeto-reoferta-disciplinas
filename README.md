@@ -328,13 +328,11 @@ make stats
 - **Commits**: Conventional Commits
 - **Testes**: Jest para backend, React Testing Library para frontend
 
-## 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## 👥 Autores
 
-- **Seu Nome** - *Desenvolvimento inicial* - [SeuGitHub](https://github.com/seu-usuario)
+- **Erik Pires** - *Desenvolvimento inicial* - [SeuGitHub](https://github.com/erikeduard)
 
 ## 🙏 Agradecimentos
 
