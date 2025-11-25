@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm ci
+RUN npm install
 
 # Copiar código fonte
 COPY . .
@@ -22,9 +22,8 @@ FROM nginx:alpine
 # Copiar arquivos buildados
 COPY --from=builder /app/build /usr/share/nginx/html
 
-
-## Copiar da pasta nginx para dentro do container frontend
-COPY ../nginx/default.conf /etc/nginx/conf.d/default.conf
+# Copiar configuração customizada do Nginx para SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expor porta 80
 EXPOSE 80

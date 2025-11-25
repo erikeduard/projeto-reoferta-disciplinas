@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configuração da Otimização</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="flex flex-1 justify-center p-4 sm:p-5 md:px-20 lg:px-40">
+<div class="layout-content-container flex w-full max-w-[960px] flex-1 flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-4 py-3 sm:px-6">
+<div class="flex items-center gap-4 text-white">
+<div class="size-5 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-white/90">Sistema de Otimização</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAXPp_Aczw7duB4ZD5U0hT-BiA7XN_CdkPJk8pGp_fNkVc4cfMeYZ72CbZy8_oI3GHJaKMGXxBVSCCn2xjIW-LfrnnulCzuzUY6RxIDCx0mcbKTWn6Hfa6eqQ6ze43PCmj4VbKVRyieT6f9UQh9WRHBXyRt6JarEd_LFe1gPefAg4iCUm4RIyKw3ePwmgusAdVuxu6pRU9tX8TNzMYDHdEcOdUUvkFU6itkuqFTgVLoO96BNRVIlbED7vMGji5QprKspMWbmd8aIA");'></div>
+</div>
+</header>
+<main class="flex-1 py-10">
+<div class="flex flex-wrap justify-between gap-4 p-4 sm:p-6">
+<div class="flex min-w-72 flex-col gap-2">
+<p class="text-4xl font-black leading-tight tracking-[-0.033em] text-white">Configuração da Otimização</p>
+<p class="text-base font-normal leading-normal text-white/60">Ajuste os parâmetros para executar o Algoritmo Genético.</p>
+</div>
+</div>
+<div class="p-2 sm:p-4">
+<div class="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6 md:p-8">
+<h2 class="text-2xl font-bold leading-tight tracking-[-0.015em] text-white/90 pb-6">Parâmetros do Algoritmo Genético</h2>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<div class="flex flex-col">
+<label class="flex flex-col w-full flex-1">
+<div class="flex items-center gap-2 pb-2">
+<p class="text-base font-medium leading-normal text-white">Tamanho da População</p>
+<div class="group relative flex cursor-pointer items-center">
+<span class="material-symbols-outlined text-base text-white/40">info</span>
+<span class="absolute -top-2 left-1/2 z-10 w-48 -translate-x-1/2 -translate-y-full transform rounded-lg bg-[#283039] px-3 py-2 text-center text-sm text-white/80 opacity-0 transition-opacity group-hover:opacity-100">Número de soluções candidatas em cada geração.</span>
+</div>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input h-12 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#3b4754] bg-[#1c2127] p-3 text-base font-normal leading-normal text-white placeholder:text-white/40 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50" value="100"/>
+</div>
+</label>
+</div>
+<div class="flex flex-col">
+<label class="flex flex-col w-full flex-1">
+<div class="flex items-center gap-2 pb-2">
+<p class="text-base font-medium leading-normal text-white">Máximo de Gerações</p>
+<div class="group relative flex cursor-pointer items-center">
+<span class="material-symbols-outlined text-base text-white/40">info</span>
+<span class="absolute -top-2 left-1/2 z-10 w-48 -translate-x-1/2 -translate-y-full transform rounded-lg bg-[#283039] px-3 py-2 text-center text-sm text-white/80 opacity-0 transition-opacity group-hover:opacity-100">Critério de parada. O número máximo de iterações do algoritmo.</span>
+</div>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input h-12 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#3b4754] bg-[#1c2127] p-3 text-base font-normal leading-normal text-white placeholder:text-white/40 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50" value="50"/>
+</div>
+</label>
+</div>
+<div class="flex flex-col">
+<label class="flex flex-col w-full flex-1">
+<div class="flex items-center gap-2 pb-2">
+<p class="text-base font-medium leading-normal text-white">Taxa de Crossover</p>
+<div class="group relative flex cursor-pointer items-center">
+<span class="material-symbols-outlined text-base text-white/40">info</span>
+<span class="absolute -top-2 left-1/2 z-10 w-48 -translate-x-1/2 -translate-y-full transform rounded-lg bg-[#283039] px-3 py-2 text-center text-sm text-white/80 opacity-0 transition-opacity group-hover:opacity-100">Probabilidade (0.0 a 1.0) de combinar pais para gerar filhos.</span>
+</div>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input h-12 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#3b4754] bg-[#1c2127] p-3 text-base font-normal leading-normal text-white placeholder:text-white/40 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50" value="0.8"/>
+</div>
+</label>
+</div>
+<div class="flex flex-col">
+<label class="flex flex-col w-full flex-1">
+<div class="flex items-center gap-2 pb-2">
+<p class="text-base font-medium leading-normal text-white">Taxa de Mutação</p>
+<div class="group relative flex cursor-pointer items-center">
+<span class="material-symbols-outlined text-base text-white/40">info</span>
+<span class="absolute -top-2 left-1/2 z-10 w-48 -translate-x-1/2 -translate-y-full transform rounded-lg bg-[#283039] px-3 py-2 text-center text-sm text-white/80 opacity-0 transition-opacity group-hover:opacity-100">Probabilidade (0.0 a 1.0) de introduzir variações aleatórias.</span>
+</div>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input h-12 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#3b4754] bg-[#1c2127] p-3 text-base font-normal leading-normal text-white placeholder:text-white/40 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50" value="0.1"/>
+</div>
+</label>
+</div>
+<div class="flex flex-col sm:col-span-2">
+<label class="flex flex-col w-full flex-1">
+<div class="flex items-center gap-2 pb-2">
+<p class="text-base font-medium leading-normal text-white">Máximo de Disciplinas</p>
+<div class="group relative flex cursor-pointer items-center">
+<span class="material-symbols-outlined text-base text-white/40">info</span>
+<span class="absolute -top-2 left-1/2 z-10 w-48 -translate-x-1/2 -translate-y-full transform rounded-lg bg-[#283039] px-3 py-2 text-center text-sm text-white/80 opacity-0 transition-opacity group-hover:opacity-100">Limite de disciplinas a serem reofertadas na solução final.</span>
+</div>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input h-12 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#3b4754] bg-[#1c2127] p-3 text-base font-normal leading-normal text-white placeholder:text-white/40 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50" value="15"/>
+</div>
+</label>
+</div>
+</div>
+<div class="mt-8 flex flex-col-reverse items-center justify-end gap-3 sm:flex-row">
+<button class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20 sm:w-auto">Restaurar Padrões</button>
+<button class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 text-base font-bold text-white transition-colors hover:bg-primary/90 sm:w-auto">
+<span class="material-symbols-outlined">play_arrow</span>
+                    Executar Otimização
+                  </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+</body></html>

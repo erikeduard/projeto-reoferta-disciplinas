@@ -1,0 +1,73 @@
+export const theme = {
+  colors: {
+    primary: {
+      50: '#eff6ff',
+      100: '#dbeafe',
+      200: '#bfdbfe',
+      300: '#93c5fd',
+      400: '#60a5fa',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
+      800: '#1e40af',
+      900: '#1e3a8a',
+    },
+    secondary: {
+      50: '#f0fdf4',
+      100: '#dcfce7',
+      200: '#bbf7d0',
+      300: '#86efac',
+      400: '#4ade80',
+      500: '#22c55e',
+      600: '#16a34a',
+      700: '#15803d',
+      800: '#166534',
+      900: '#14532d',
+    },
+    accent: {
+      purple: '#8b5cf6',
+      orange: '#f97316',
+      pink: '#ec4899',
+      teal: '#14b8a6',
+    },
+    neutral: {
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#e5e5e5',
+      300: '#d4d4d4',
+      400: '#a3a3a3',
+      500: '#737373',
+      600: '#525252',
+      700: '#404040',
+      800: '#262626',
+      900: '#171717',
+    },
+    background: {
+      light: '#ffffff',
+      dark: '#0f172a',
+      card: '#f8fafc',
+      cardDark: '#1e293b',
+    }
+  },
+  spacing: {
+    xs: '0.5rem',
+    sm: '0.75rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+  },
+  borderRadius: {
+    sm: '0.375rem',
+    md: '0.5rem',
+    lg: '0.75rem',
+    xl: '1rem',
+    full: '9999px',
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+  }
+};

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Análise da Execução #123</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 w-full bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
+<div class="container mx-auto px-4">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-4 text-slate-800 dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold">Sistema de Otimização</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex h-10 min-w-[84px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary/90">
+<span class="material-symbols-outlined text-base">add_chart</span>
+<span class="truncate">Nova Análise</span>
+</button>
+<button class="flex h-10 min-w-[84px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-white transition-colors hover:bg-slate-300 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-base">download</span>
+<span class="truncate">Exportar Relatório</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD3zmFPwy1GEidjpZ7F9QgzSNPZrPGwLU-n9KbY-DVTFCcNxgrRb2_WeKDl9et96mh9H09mphlUWbaps8VEBbTsoygCh5Z5nPak6dV2u5iPbljfnavqk-sxKER_IbjPAjAP4-8KLay2bPYmGOx6Yo_xE4ko68r04ZO95V5VyYkypKUMXa4tvl6CtzxdY7RpGJhkjAldHzYoO2MvuCtRgbf51GH43CJBwiIy9DYeDD5WvxO7ODlskgi1zagDcgjwW5Ezm_TUNZU8LQ");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="container mx-auto flex h-full grow flex-col px-4 py-8">
+<div class="flex flex-col gap-6">
+<div class="flex flex-wrap gap-2">
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary" href="#">Dashboard</a>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">/</span>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary" href="#">Execuções</a>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">/</span>
+<span class="text-slate-800 dark:text-white text-sm font-medium">Análise da Execução #123</span>
+</div>
+<div class="flex flex-wrap justify-between gap-3">
+<div class="flex min-w-72 flex-col gap-2">
+<p class="text-slate-900 dark:text-white text-3xl font-black tracking-tight">Análise da Execução #123</p>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal">Análise detalhada da performance e resultados da otimização.</p>
+</div>
+</div>
+<div class="border-b border-slate-200 dark:border-slate-800">
+<div class="flex gap-8">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-primary pb-3 pt-2" href="#">
+<p class="text-primary text-sm font-bold">Gráficos de Convergência</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 hover:text-slate-700 dark:hover:text-slate-200" href="#">
+<p class="text-sm font-bold">Disciplinas Selecionadas</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 hover:text-slate-700 dark:hover:text-slate-200" href="#">
+<p class="text-sm font-bold">Análise por Semestre</p>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-8 pt-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="flex items-start gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Melhor Aptidão Final</p>
+<p class="text-2xl font-bold text-slate-900 dark:text-white">4,875</p>
+</div>
+</div>
+<div class="flex items-start gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Total de Alunos Beneficiados</p>
+<p class="text-2xl font-bold text-slate-900 dark:text-white">1,230</p>
+</div>
+</div>
+<div class="flex items-start gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">replay</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Número de Gerações</p>
+<p class="text-2xl font-bold text-slate-900 dark:text-white">150</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold tracking-tight">Evolução da Aptidão do Algoritmo</h2>
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+<img alt="Abstract line chart showing data convergence over time with blue and green lines on a dark background." class="w-full h-auto object-cover rounded-lg aspect-[16/7]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe3KdMVL2jRzkF-1kTYJyWBwsfbUrTtDSAMpsL2swsh49cX9Lqj4ufAXLOnbcyNzrMwTXPRFLfIhJcBu6uVdnL4Y7MBzEf06cT-AtUGqK6af6-V0XNVxLOe3no6ltjion6b6J4sPYk38wuHuiyvko-XJgEEn08Usvj2feeBab3h8R4WK-UhxSU4N-Ip_cDsqTKzGie8l6_hq6NaON-siJfRFtoqU5GOhmAnkElOW16ZmbgShBIa_tCYTA16uoXIPBWSX7CKkRwRQ"/>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sistema de Otimização</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-10 md:px-20 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-b-[#283039] px-4 md:px-10 py-3">
+<div class="flex items-center gap-4 text-black dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path>
+</svg>
+</div>
+<h2 class="text-black dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Otimização</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4 sm:gap-8">
+<div class="flex gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-200 dark:bg-[#283039] text-gray-700 dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-gray-700 dark:text-white text-xl">help</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-200 dark:bg-[#283039] text-gray-700 dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-gray-700 dark:text-white text-xl">notifications</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-200 dark:bg-[#283039] text-gray-700 dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-gray-700 dark:text-white text-xl">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJJuXK8tbe8jJqHqZqjAftztLRW0kOPmAJXugUCSWUHvLLVt5M10YI9rAxCG1pnnXcjQ8Zgj9841T9t4jc-_29q8IZ05M53AWn8946bpFd8-rRgnLDxMHyq7QjPdoArAQTjl_IXw4lVojaoREwpFyFCqwaNEEHsM8uBS8Imy5uuPXvsgjdYZLO7Xjr_telWUQr7PsWU6GtiebsHBXCzRlrlzW65OXJD9xrUdZm0nOieLhgeNwmJFBii6Mk6xvbUW0HeoBp0WgiRw");'></div>
+</div>
+</header>
+<main class="flex-1 flex flex-col gap-8 py-8 px-4">
+<div class="flex flex-wrap justify-between gap-3 p-4">
+<div class="flex w-full flex-col gap-3 text-center">
+<p class="text-black dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Otimizador de Oferta de Disciplinas</p>
+<p class="text-gray-600 dark:text-[#9dabb9] text-base font-normal leading-normal">Faça o upload da planilha de dados para iniciar a otimização.</p>
+</div>
+</div>
+<!-- Estado 1: Vazio / Aguardando Arquivo -->
+<div class="flex flex-col p-4">
+<div class="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-gray-400 dark:border-[#3b4754] px-6 py-14">
+<div class="flex max-w-[480px] flex-col items-center gap-2">
+<span class="material-symbols-outlined text-primary text-5xl">upload_file</span>
+<p class="text-black dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">Arraste e solte o arquivo Excel aqui</p>
+<p class="text-gray-600 dark:text-white text-sm font-normal leading-normal max-w-[480px] text-center">Apenas arquivos .xlsx são permitidos</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Selecionar arquivo</span>
+</button>
+</div>
+</div>
+<!-- Estado 2: Enviando -->
+<div class="flex flex-col gap-3 p-4">
+<div class="flex gap-6 justify-between items-center">
+<p class="text-black dark:text-white text-base font-medium leading-normal">Enviando...</p>
+<p class="text-black dark:text-white text-sm font-normal leading-normal">75%</p>
+</div>
+<div class="rounded-full bg-gray-200 dark:bg-[#3b4754]">
+<div class="h-2 rounded-full bg-primary" style="width: 75%;"></div>
+</div>
+</div>
+<!-- Estado 3: Sucesso -->
+<div class="flex flex-col items-center gap-4 rounded-lg bg-green-500/10 dark:bg-green-500/20 border border-solid border-green-500/30 p-6 text-center">
+<span class="material-symbols-outlined text-green-500 text-5xl">check_circle</span>
+<div class="flex flex-col gap-1">
+<p class="text-black dark:text-white text-lg font-bold">Arquivo enviado com sucesso!</p>
+<p class="text-gray-700 dark:text-gray-300 text-sm">O processamento foi iniciado e você será notificado quando a otimização estiver concluída.</p>
+</div>
+<button class="mt-2 flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Enviar outro arquivo</span>
+</button>
+</div>
+<!-- Estado 4: Erro -->
+<div class="flex flex-col items-center gap-4 rounded-lg bg-red-500/10 dark:bg-red-500/20 border border-solid border-red-500/30 p-6 text-center">
+<span class="material-symbols-outlined text-red-500 text-5xl">error</span>
+<div class="flex flex-col gap-1">
+<p class="text-black dark:text-white text-lg font-bold">Erro no upload</p>
+<p class="text-gray-700 dark:text-gray-300 text-sm">Formato de arquivo inválido. Por favor, envie um arquivo .xlsx.</p>
+</div>
+<button class="mt-2 flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Tentar novamente</span>
+</button>
+</div>
+<p class="text-gray-600 dark:text-[#9dabb9] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">Precisa de ajuda? <a class="underline text-primary" href="#">Ver modelo de arquivo</a></p>
+</main>
+</div>
+</div>
+</div>
+</div>
+</body></html>

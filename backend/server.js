@@ -30,6 +30,9 @@ const logger = winston.createLogger({
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Quando está atrás de um proxy (Nginx), habilitar trust proxy para IP correto no rate-limit
+app.set('trust proxy', 1);
+
 // Middlewares de segurança e performance
 app.use(helmet());
 app.use(compression());
@@ -103,9 +106,9 @@ app.post('/api/upload', upload.single('planilha'), async (req, res) => {
 
     logger.info(`Arquivo recebido: ${req.file.filename}`);
     
-    // Processar o arquivo Excel
-    const dataProcessor = new DataProcessor();
-    const dadosProcessados = await dataProcessor.processarPlanilha(req.file.path);
+  // Processar o arquivo Excel
+  const dataProcessor = new DataProcessor();
+  const dadosProcessados = await dataProcessor.processarPlanilha(req.file.path);
     
     res.json({
       message: 'Arquivo processado com sucesso',
@@ -119,9 +122,14 @@ app.post('/api/upload', upload.single('planilha'), async (req, res) => {
 
   } catch (error) {
     logger.error('Erro ao processar arquivo:', error);
+    // Se for erro de validação/planilha inválida, retornar 400
+    const msg = error?.message || '';
+    if (msg.includes('Erro ao processar planilha') || msg.includes('Planilha vazia') || msg.includes('Nenhuma disciplina') || msg.includes('Nenhum aluno')) {
+      return res.status(400).json({ error: msg });
+    }
     res.status(500).json({ 
       error: 'Erro interno do servidor',
-      message: error.message 
+      message: msg 
     });
   }
 });
@@ -157,11 +165,22 @@ app.post('/api/otimizar', async (req, res) => {
     const resultadoId = `resultado-${Date.now()}`;
     const resultadoPath = path.join(__dirname, 'results', `${resultadoId}.json`);
     
+    // Criar disciplinasInfo com todas as disciplinas (selecionadas e não selecionadas)
+    const disciplinasInfo = dadosProcessados.disciplinas.map(d => ({
+      codigo: d.codigo,
+      nome: d.nome,
+      alunosReprovados: d.alunosReprovados,
+      selecionada: resultado.melhorAptidao.disciplinasReofertadas.includes(d.codigo)
+    }));
+    
     await fs.writeFile(resultadoPath, JSON.stringify({
       id: resultadoId,
       timestamp: new Date().toISOString(),
       parametros,
-      resultado,
+      resultado: {
+        ...resultado,
+        disciplinasInfo
+      },
       dadosOriginais: {
         totalAlunos: dadosProcessados.alunos.length,
         totalDisciplinas: dadosProcessados.disciplinas.length
@@ -176,7 +195,9 @@ app.post('/api/otimizar', async (req, res) => {
       resultado: {
         melhorAptidao: resultado.melhorAptidao,
         disciplinasReofertadas: resultado.disciplinasReofertadas,
-        estatisticas: resultado.estatisticas
+        disciplinasInfo,
+        estatisticas: resultado.estatisticas,
+        historico: resultado.historico
       }
     });
 
@@ -222,19 +243,61 @@ app.get('/api/resultados', async (req, res) => {
           try {
             const content = await fs.readFile(path.join(resultsDir, file), 'utf8');
             const data = JSON.parse(content);
-            return {
+            
+            // Extrair informações completas
+            const melhorAptidao = data.resultado?.melhorAptidao || {};
+            const dadosOriginais = data.dadosOriginais || {};
+            const parametros = data.parametros || {};
+            const historico = data.resultado?.historico || [];
+            
+            // Para arquivos antigos sem dadosOriginais, tentar inferir dos detalhes
+            let totalAlunos = dadosOriginais.totalAlunos || 0;
+            let totalDisciplinas = dadosOriginais.totalDisciplinas || 0;
+            
+            if (!totalAlunos && melhorAptidao.detalhesPorAluno?.length) {
+              totalAlunos = melhorAptidao.detalhesPorAluno.length;
+            }
+            
+            if (!totalDisciplinas && melhorAptidao.disciplinasReofertadas?.length) {
+              // Estimativa baseada nas disciplinas reofertadas
+              totalDisciplinas = melhorAptidao.totalDisciplinasAtendidas || 
+                                melhorAptidao.disciplinasReofertadas.length;
+            }
+            
+            const resultado = {
               id: data.id,
               timestamp: data.timestamp,
-              alunosBeneficiados: data.resultado.melhorAptidao.alunosBeneficiados,
-              disciplinasReofertadas: data.resultado.melhorAptidao.numDisciplinasReofertadas
+              alunosBeneficiados: melhorAptidao.alunosBeneficiados || 0,
+              disciplinasReofertadas: melhorAptidao.numDisciplinasReofertadas || 0,
+              aptidao: melhorAptidao.aptidao || 0,
+              totalAlunos,
+              totalDisciplinas,
+              parametros: {
+                tamanhoPopulacao: parametros.tamanhoPopulacao || 0,
+                maxGeracoes: parametros.maxGeracoes || 0,
+                maxDisciplinasReoferta: parametros.maxDisciplinasReoferta || 0
+              },
+              // Calcular tempo aproximado (em segundos) baseado no histórico
+              tempoExecucao: historico.length ? 
+                (historico.length * 0.1).toFixed(1) : '0.0'
             };
-          } catch {
+            
+            logger.info(`Resultado ${file}: aptidao=${resultado.aptidao}, tempo=${resultado.tempoExecucao}s`);
+            
+            return resultado;
+          } catch (error) {
+            logger.error(`Erro ao processar arquivo ${file}:`, error);
             return null;
           }
         })
     );
     
-    res.json(resultados.filter(r => r !== null));
+    // Filtrar nulos e ordenar por timestamp (mais recente primeiro)
+    const resultadosFiltrados = resultados
+      .filter(r => r !== null)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    res.json(resultadosFiltrados);
     
   } catch (error) {
     logger.error('Erro ao listar resultados:', error);
