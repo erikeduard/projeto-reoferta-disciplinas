@@ -23,7 +23,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
     evolution: false,
     analysis: false
   });
-  
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -31,7 +31,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
     const loadResult = async () => {
       // Verificar se há ID na URL (vindo do histórico)
       const resultId = searchParams.get('id');
-      
+
       if (resultId) {
         setLoading(true);
         try {
@@ -54,7 +54,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
         setSelectedResult(resultData);
       }
     };
-    
+
     loadResult();
   }, [globalState.optimizationResult, searchParams]);
 
@@ -71,7 +71,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
       </div>
     );
   }
-  
+
   if (!selectedResult) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -99,7 +99,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
   const best = r?.melhorAptidao || {};
   const stats = r?.estatisticas || {};
   const totalAlunos = stats?.resumo?.totalAlunos ?? 50;
-  
+
   console.log('=== DEBUG COMPLETO ===');
   console.log('selectedResult completo:', JSON.stringify(selectedResult, null, 2));
   console.log('r (normalizado):', r);
@@ -111,11 +111,11 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
   const disciplinasInfo = r?.disciplinasInfo
     || (Array.isArray(r?.disciplinasReofertadas)
       ? r.disciplinasReofertadas.map(d => ({
-          codigo: d?.codigo || d,
-          nome: d?.nome || String(d?.codigo || d),
-          alunosReprovados: d?.alunosReprovados ?? 0,
-          selecionada: true
-        }))
+        codigo: d?.codigo || d,
+        nome: d?.nome || String(d?.codigo || d),
+        alunosReprovados: d?.alunosReprovados ?? 0,
+        selecionada: true
+      }))
       : []);
 
   // Preparar dados para gráficos
@@ -123,7 +123,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
   const disciplinasSelecionadas = disciplinasInfo.filter(d => d.selecionada);
   const disciplinasNaoSelecionadas = disciplinasInfo.filter(d => !d.selecionada).slice(0, 6);
   const disciplinasParaGrafico = [...disciplinasSelecionadas, ...disciplinasNaoSelecionadas];
-  
+
   // Ordenar por quantidade de alunos reprovados (decrescente)
   const disciplinasData = disciplinasParaGrafico
     .sort((a, b) => b.alunosReprovados - a.alunosReprovados)
@@ -135,19 +135,19 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
     })) || [];
 
   const alunosBeneficiadosData = [
-    { 
-      categoria: 'Beneficiados', 
+    {
+      categoria: 'Beneficiados',
       valor: best?.alunosBeneficiados ?? 0,
-      cor: '#0088FE' 
+      cor: '#0088FE'
     },
-    { 
-      categoria: 'Não Beneficiados', 
+    {
+      categoria: 'Não Beneficiados',
       valor: Math.max(0, totalAlunos - (best?.alunosBeneficiados ?? 0)),
-      cor: '#FF8042' 
+      cor: '#FF8042'
     }
   ];
 
-  const perfilAlunosData = stats?.perfisPorReprovacao ? 
+  const perfilAlunosData = stats?.perfisPorReprovacao ?
     Object.entries(stats.perfisPorReprovacao).map(([faixa, data]) => ({
       faixa,
       total: data.total,
@@ -155,9 +155,30 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
       percentual: ((data.beneficiados / data.total) * 100).toFixed(1)
     })) : [];
 
+  const capacidadeData = stats?.distribuicaoCapacidade ?
+    Object.entries(stats.distribuicaoCapacidade)
+      .map(([cap, qtd]) => ({
+        capacidade: cap,
+        quantidade: qtd
+      }))
+      .sort((a, b) => Number(a.capacidade) - Number(b.capacidade))
+    : [];
+
+  const semestresData = stats?.disciplinasPorSemestre ?
+    Object.entries(stats.disciplinasPorSemestre)
+      .map(([sem, qtd]) => ({
+        semestre: `${sem}º Sem`,
+        quantidade: qtd
+      }))
+      .sort((a, b) => parseInt(a.semestre) - parseInt(b.semestre))
+    : [];
+
   // Extrair histórico de diferentes estruturas possíveis
   const evolucaoData = r?.historico || selectedResult?.historico || [];
-  
+
+  console.log('DEBUG capacidadeData:', capacidadeData);
+  console.log('DEBUG stats.distribuicaoCapacidade:', stats?.distribuicaoCapacidade);
+
   console.log('Dados de evolução:', evolucaoData);
   console.log('Tamanho do array:', evolucaoData.length);
 
@@ -177,11 +198,11 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
     const aptidaoInicial = evolucaoData[0]?.melhorAptidao || 0;
     const aptidaoFinal = evolucaoData[evolucaoData.length - 1]?.melhorAptidao || 0;
     const melhoriaTotal = aptidaoFinal - aptidaoInicial;
-    
+
     // Encontrar geração de convergência (quando a aptidão para de melhorar significativamente)
     let geracaoConvergencia = 1;
     const limiarMelhoria = aptidaoFinal * 0.02; // 2% do valor final
-    
+
     for (let i = 1; i < evolucaoData.length; i++) {
       const melhoriaRestante = aptidaoFinal - evolucaoData[i].melhorAptidao;
       if (melhoriaRestante <= limiarMelhoria) {
@@ -189,7 +210,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
         break;
       }
     }
-    
+
     // Calcular estabilidade (quantas gerações finais mantiveram o mesmo valor)
     let geracoesEstaveis = 0;
     for (let i = evolucaoData.length - 1; i >= 0; i--) {
@@ -199,15 +220,15 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
         break;
       }
     }
-    
+
     const estabilidade = geracoesEstaveis >= 10 ? 'Estável' : geracoesEstaveis >= 5 ? 'Moderada' : 'Instável';
-    
+
     // Gerar texto de análise dinâmico
     const percentualGeracao = ((geracaoConvergencia / evolucaoData.length) * 100).toFixed(0);
     const textoAnalise = melhoriaTotal > 0
       ? `O algoritmo convergiu na geração ${geracaoConvergencia} (${percentualGeracao}% do total) e manteve estabilidade por ${geracoesEstaveis} gerações. Melhoria de ${melhoriaTotal} pontos indica uma boa otimização.`
       : `O algoritmo encontrou a melhor solução logo na primeira geração e a manteve por ${geracoesEstaveis} gerações, indicando que a solução inicial já era ótima.`;
-    
+
     return {
       geracaoConvergencia,
       melhoriaTotal,
@@ -264,10 +285,10 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
             Resultados da Otimização
           </h1>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Análise detalhada dos resultados do algoritmo genético para otimização 
+            Análise detalhada dos resultados do algoritmo genético para otimização
             da reoferta de disciplinas.
           </p>
-          
+
           {/* Action Buttons */}
           <div className="flex justify-center space-x-4 mt-6">
             <button
@@ -355,11 +376,10 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors ${activeTab === id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>
@@ -386,7 +406,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                       {expandedSections.disciplines ? <ChevronUp /> : <ChevronDown />}
                     </button>
                   </div>
-                  
+
                   {expandedSections.disciplines && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {(best?.disciplinasReofertadas || []).map((codigo, index) => {
@@ -416,6 +436,25 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                   )}
                 </div>
 
+                {/* Gráfico de Disciplinas por Semestre */}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    Distribuição por Semestre da Grade
+                  </h2>
+                  <div className="bg-white p-6 rounded-lg">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={semestresData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="semestre" />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="quantidade" name="Disciplinas Reofertadas" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
                 {/* Gráfico de Pizza - Alunos Beneficiados */}
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -431,7 +470,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="valor"
-                          label={({categoria, percent}) => `${categoria}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ categoria, percent }) => `${categoria}: ${(percent * 100).toFixed(0)}%`}
                         >
                           {alunosBeneficiadosData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.cor} />
@@ -457,7 +496,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                       </div>
                       <p className="text-sm text-blue-700 mt-1">dos alunos com reprovações</p>
                     </div>
-                    
+
                     <div className="bg-green-50 p-6 rounded-lg">
                       <h3 className="text-sm font-medium text-green-800 mb-2">Disciplinas por Aluno</h3>
                       <div className="text-2xl font-bold text-green-600">
@@ -465,7 +504,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                       </div>
                       <p className="text-sm text-green-700 mt-1">média de disciplinas atendidas</p>
                     </div>
-                    
+
                     <div className="bg-purple-50 p-6 rounded-lg">
                       <h3 className="text-sm font-medium text-purple-800 mb-2">Alunos por Disciplina</h3>
                       <div className="text-2xl font-bold text-purple-600">
@@ -484,28 +523,28 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
                   Análise Detalhada das Disciplinas
                 </h2>
-                
+
                 <div className="bg-white p-6 rounded-lg mb-6">
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={disciplinasData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="codigo" 
+                      <XAxis
+                        dataKey="codigo"
                         angle={-45}
                         textAnchor="end"
                         height={80}
                         fontSize={10}
                       />
                       <YAxis label={{ value: 'Alunos Reprovados', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value, name, props) => [
-                          value, 
+                          value,
                           `Alunos Reprovados - ${props.payload.nome}`
                         ]}
                       />
                       <Legend />
-                      <Bar 
-                        dataKey="alunosReprovados" 
+                      <Bar
+                        dataKey="alunosReprovados"
                         name="Alunos Reprovados"
                         fill={(entry) => entry?.selecionada ? "#0088FE" : "#FF8042"}
                       >
@@ -555,7 +594,37 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
                   Análise do Impacto nos Alunos
                 </h2>
-                
+
+                <div className="bg-white p-6 rounded-lg mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Distribuição de Capacidade dos Alunos
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Capacidade de disciplinas por semestre (adaptativa baseada no ano de ingresso)
+                  </p>
+
+                  {capacidadeData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={capacidadeData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="capacidade" label={{ value: 'Capacidade', position: 'insideBottom', offset: -5 }} />
+                        <YAxis label={{ value: 'Qtd Alunos', angle: -90, position: 'insideLeft' }} />
+                        <Tooltip formatter={(value) => [value, 'Alunos']} />
+                        <Legend />
+                        <Bar dataKey="quantidade" name="Quantidade de Alunos" fill="#F59E0B" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-64 flex flex-col items-center justify-center bg-gray-50 rounded border border-gray-200 border-dashed">
+                      <BarChart3 className="h-10 w-10 text-gray-400 mb-2" />
+                      <p className="text-gray-500 font-medium">Gráfico indisponível para este resultado</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Execute uma nova otimização para gerar os dados de capacidade atualizados.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <div className="bg-white p-6 rounded-lg mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Beneficiados por Perfil de Reprovação
@@ -586,7 +655,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                             <span className="text-sm text-green-600">{perfil.percentual}%</span>
                           </div>
                           <div className="w-full bg-green-200 rounded-full h-2">
-                            <div 
+                            <div
                               className="bg-green-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${perfil.percentual}%` }}
                             ></div>
@@ -626,6 +695,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                     </div>
                   </div>
                 </div>
+
               </div>
             )}
 
@@ -635,35 +705,45 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
                   Evolução do Algoritmo Genético
                 </h2>
-                
+
                 <div className="bg-white p-6 rounded-lg mb-6">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={evolucaoData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="geracao" 
-                        label={{ value: 'Geração', position: 'insideBottom', offset: -5 }} 
+                      <XAxis
+                        dataKey="geracao"
+                        label={{ value: 'Geração', position: 'insideBottom', offset: -5 }}
                       />
-                      <YAxis 
-                        label={{ value: 'Aptidão', angle: -90, position: 'insideLeft' }} 
+                      <YAxis
+                        label={{ value: 'Aptidão', angle: -90, position: 'insideLeft' }}
+                        domain={['dataMin - 50', 'dataMax + 50']}
                       />
                       <Tooltip />
                       <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="melhorAptidao" 
-                        stroke="#0088FE" 
+                      <Line
+                        type="monotone"
+                        dataKey="melhorAptidao"
+                        stroke="#10B981"
                         strokeWidth={3}
-                        dot={{ fill: '#0088FE', strokeWidth: 2, r: 4 }}
-                        name="Melhor Aptidão"
+                        dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                        name="Melhor (Best)"
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="mediaAptidao" 
-                        stroke="#82CA9D" 
+                      <Line
+                        type="monotone"
+                        dataKey="mediaAptidao"
+                        stroke="#F59E0B"
                         strokeWidth={2}
-                        dot={{ fill: '#82CA9D', strokeWidth: 2, r: 3 }}
-                        name="Aptidão Média"
+                        dot={{ fill: '#F59E0B', strokeWidth: 2, r: 3 }}
+                        name="Média (Avg)"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="piorAptidao"
+                        stroke="#EF4444"
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
+                        name="Pior (Worst)"
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -677,7 +757,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                     </div>
                     <p className="text-sm text-blue-700 mt-1">Primeira convergência</p>
                   </div>
-                  
+
                   <div className="bg-green-50 p-6 rounded-lg">
                     <h3 className="text-sm font-medium text-green-800 mb-2">Melhoria Total</h3>
                     <div className="text-2xl font-bold text-green-600">
@@ -687,7 +767,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
                       {metricasEvolucao.aptidaoInicial} → {metricasEvolucao.aptidaoFinal}
                     </p>
                   </div>
-                  
+
                   <div className="bg-purple-50 p-6 rounded-lg">
                     <h3 className="text-sm font-medium text-purple-800 mb-2">Estabilidade</h3>
                     <div className="text-2xl font-bold text-purple-600">
@@ -715,7 +795,7 @@ const ResultsPage = ({ globalState, setGlobalState }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
