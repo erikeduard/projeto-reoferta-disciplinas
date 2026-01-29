@@ -19,30 +19,33 @@ class DataProcessor {
     try {
       // Ler arquivo Excel
       const workbook = XLSX.readFile(filePath);
-      
+
       // Verificar se existe a planilha "Pendencias 2021" ou similar
       let sheetName = this.encontrarPlanilhaPendencias(workbook.SheetNames);
-      
+
       if (!sheetName) {
         // Se não encontrar, usar a primeira planilha
         sheetName = workbook.SheetNames[0];
       }
-      
+
+      // Criar mapa de Ingressos da Planilha1 (Metadados)
+      const mapaIngresso = this.criarMapaIngresso(workbook);
+
       const worksheet = workbook.Sheets[sheetName];
       const dados = XLSX.utils.sheet_to_json(worksheet);
-      
+
       if (!dados || dados.length === 0) {
         throw new Error('Planilha vazia ou sem dados válidos');
       }
-      
+
       // Processar dados
-      const { disciplinas, alunos } = this.processarDados(dados);
-      
+      const { disciplinas, alunos } = this.processarDados(dados, mapaIngresso);
+
       return {
         disciplinas: this.ordenarDisciplinas(disciplinas),
         alunos: this.filtrarAlunosComReprovacoes(alunos)
       };
-      
+
     } catch (error) {
       throw new Error(`Erro ao processar planilha: ${error.message}`);
     }
@@ -60,43 +63,74 @@ class DataProcessor {
       'Reprovacoes',
       'Reprovações'
     ];
-    
-    return sheetNames.find(name => 
-      possiveisNomes.some(possivel => 
+
+    return sheetNames.find(name =>
+      possiveisNomes.some(possivel =>
         name.toLowerCase().includes(possivel.toLowerCase())
       )
     );
   }
 
   /**
+   * Criar mapa de Matricula -> Ano Ingresso a partir da primeira planilha (Metadados)
+   */
+  criarMapaIngresso(workbook) {
+    const mapa = new Map();
+    try {
+      // Assumindo que a primeira planilha tem os metadados (Planilha1)
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const dados = XLSX.utils.sheet_to_json(sheet);
+
+      dados.forEach(linha => {
+        const matricula = this.extrairMatricula(linha);
+        const ingresso = this.extrairIngresso(linha);
+        if (matricula && ingresso) {
+          mapa.set(matricula, ingresso);
+        }
+      });
+    } catch (e) {
+      console.warn('Erro ao criar mapa de ingressos:', e.message);
+    }
+    return mapa;
+  }
+
+  /**
    * Processar dados brutos da planilha
    */
-  processarDados(dados) {
+  processarDados(dados, mapaIngresso = new Map()) {
     const disciplinasSet = new Set();
     const alunos = [];
-    
+
     dados.forEach((linha, index) => {
+      if (index === 0) console.log('DEBUG KEYS:', Object.keys(linha));
       try {
         // Extrair dados do aluno
         const matricula = this.extrairMatricula(linha);
         const nome = this.extrairNome(linha);
         const polo = this.extrairPolo(linha);
-        
+
+        // Tentar extrair ingresso da linha atual ou do mapa
+        let anoIngresso = this.extrairIngresso(linha);
+        if (!anoIngresso && mapaIngresso.has(matricula)) {
+          anoIngresso = mapaIngresso.get(matricula);
+        }
+
         if (!matricula || !nome) {
           console.warn(`Linha ${index + 1}: Dados incompletos (matrícula ou nome faltando)`);
           return;
         }
-        
+
         // Encontrar disciplinas reprovadas (marcadas com "X")
         const disciplinasReprovadas = [];
-        
+
         Object.keys(linha).forEach(coluna => {
           if (this.isDisciplinaColuna(coluna) && this.isReprovacao(linha[coluna])) {
             const codigo = this.extrairCodigoDisciplina(coluna);
             const nome = this.extrairNomeDisciplina(coluna);
-            
+
             disciplinasReprovadas.push(codigo);
-            
+
             // Adicionar disciplina ao conjunto global
             disciplinasSet.add(JSON.stringify({
               codigo,
@@ -105,7 +139,7 @@ class DataProcessor {
             }));
           }
         });
-        
+
         // Adicionar aluno apenas se tiver reprovações
         if (disciplinasReprovadas.length > 0) {
           alunos.push({
@@ -114,28 +148,53 @@ class DataProcessor {
             polo,
             disciplinasReprovadas,
             totalReprovacoes: disciplinasReprovadas.length,
-            capacidadePorSemestre: this.calcularCapacidadeAluno(disciplinasReprovadas.length)
+            totalReprovacoes: disciplinasReprovadas.length,
+            capacidadePorSemestre: this.calcularCapacidadeAluno(disciplinasReprovadas.length, anoIngresso)
           });
         }
-        
+
       } catch (error) {
         console.warn(`Erro ao processar linha ${index + 1}: ${error.message}`);
       }
     });
-    
+
     // Converter disciplinas de volta para array de objetos
     const disciplinas = Array.from(disciplinasSet).map(d => {
       const disciplina = JSON.parse(d);
       return {
         ...disciplina,
-        alunosReprovados: alunos.filter(aluno => 
+        alunosReprovados: alunos.filter(aluno =>
           aluno.disciplinasReprovadas.includes(disciplina.codigo)
         ).length,
         semestre: Math.ceil(disciplina.posicaoNaGrade / 5) || 1
       };
     });
-    
+
     return { disciplinas, alunos };
+  }
+
+  /**
+   * Extrair ano de ingresso do aluno
+   */
+  extrairIngresso(linha) {
+    const possiveisChaves = ['Ingresso', 'INGRESSO', 'Ano Ingresso', 'Inicio'];
+
+    // Tentativa exata
+    for (const chave of possiveisChaves) {
+      if (linha[chave]) {
+        return String(linha[chave]).trim();
+      }
+    }
+
+    // Tentativa fuzzy (case insensitive)
+    const chaves = Object.keys(linha);
+    for (const chave of chaves) {
+      if (chave.toLowerCase().includes('ingresso')) {
+        return String(linha[chave]).trim();
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -143,13 +202,13 @@ class DataProcessor {
    */
   extrairMatricula(linha) {
     const possiveisChaves = ['Matrícula', 'Matricula', 'MATRICULA', 'MATRÍCULA'];
-    
+
     for (const chave of possiveisChaves) {
       if (linha[chave] !== undefined && linha[chave] !== null) {
         return String(linha[chave]).trim();
       }
     }
-    
+
     return null;
   }
 
@@ -158,13 +217,13 @@ class DataProcessor {
    */
   extrairNome(linha) {
     const possiveisChaves = ['Nome', 'NOME', 'nome', 'Discente'];
-    
+
     for (const chave of possiveisChaves) {
       if (linha[chave] && typeof linha[chave] === 'string') {
         return linha[chave].trim();
       }
     }
-    
+
     return null;
   }
 
@@ -173,13 +232,13 @@ class DataProcessor {
    */
   extrairPolo(linha) {
     const possiveisChaves = ['Polo', 'POLO', 'polo'];
-    
+
     for (const chave of possiveisChaves) {
       if (linha[chave] && typeof linha[chave] === 'string') {
         return linha[chave].trim();
       }
     }
-    
+
     return 'Não informado';
   }
 
@@ -224,13 +283,53 @@ class DataProcessor {
   /**
    * Calcular capacidade do aluno cursar disciplinas por semestre
    */
-  calcularCapacidadeAluno(totalReprovacoes) {
-    // Lógica baseada no número de reprovações e tempo estimado restante
-    const tempoRestante = 4; // Assumindo 4 semestres restantes em média
-    const capacidadeMaxima = 5; // Máximo de disciplinas por semestre
-    
+  /**
+   * Calcular capacidade do aluno cursar disciplinas por semestre
+   * Baseado no tempo restante para conclusão e urgência de formatura
+   */
+  calcularCapacidadeAluno(totalReprovacoes, anoIngresso) {
+    if (!anoIngresso) return 5; // Fallback para padrão se não tiver data
+
+    // Definir semestre atual (Idealmente viria de parâmetro, mas vamos assumir data atual ou recente)
+    // Para compatibilidade com TCC/Dados antigos, vamos assumir 2026.1 como "hoje" ou usar Date
+    const hoje = new Date();
+    const anoAtual = hoje.getFullYear();
+    const mesAtual = hoje.getMonth() + 1;
+    const semestreAtual = parseFloat(`${anoAtual}.${mesAtual > 6 ? 2 : 1}`);
+
+    const prazoMaximoCurso = 8; // Duração padrão do curso em anos (ou semestres? O código original usava semestres=8? Não, TCC diz 4 anos. Vamos usar semestres.)
+    // Vamos trabalhar em semestres para precisão
+
+    // Converter "2017.2" para número de semestres absolutos
+    const getSemestresAbsolutos = (semestreStr) => {
+      const [ano, sem] = String(semestreStr).split('.').map(Number);
+      return (ano * 2) + (sem === 2 ? 1 : 0);
+    };
+
+    const semestresPercorridos = getSemestresAbsolutos(semestreAtual) - getSemestresAbsolutos(anoIngresso);
+
+    // Assumindo prazo máximo de retenção de 1.5x o tempo (4 anos = 8 semestres -> Max 12 semestres)
+    // Ou simplesmente baseando no objetivo de formar em 8 semestres?
+    // O TCC diz "tempo restante para conclusão". Se ele entrou em 2017.2 e estamos em 2026.1, ele já estourou.
+    // Vamos assumir que o "tempo restante" é o que falta para completar o currículo MÍNIMO ou o prazo de jubilação?
+    // Vou usar a lógica de "Reta Final" pedida:
+
+    // Estimativa de semestres restantes baseado em um prazo limite de ~12 semestres (6 anos)
+    const PRAZO_JUBILACAO = 14; // 7 anos com margem
+    let tempoRestante = Math.max(1, PRAZO_JUBILACAO - semestresPercorridos);
+
+    // Lógica Adaptativa
+    let capacidadeMaxima = 6; // Padrão ligeiramente maior que 5
+
+    // Se estiver na reta final (menos de 1 ano para jubilar ou formar)
+    if (tempoRestante <= 2) {
+      capacidadeMaxima = 8; // "Gás final"
+    } else if (tempoRestante <= 4) {
+      capacidadeMaxima = 7;
+    }
+
     const capacidadeCalculada = Math.ceil(totalReprovacoes / tempoRestante);
-    
+
     return Math.min(capacidadeCalculada, capacidadeMaxima);
   }
 
@@ -262,21 +361,21 @@ class DataProcessor {
    */
   validarDados(dados) {
     const { disciplinas, alunos } = dados;
-    
+
     if (!disciplinas || disciplinas.length === 0) {
       throw new Error('Nenhuma disciplina foi encontrada nos dados');
     }
-    
+
     if (!alunos || alunos.length === 0) {
       throw new Error('Nenhum aluno com reprovações foi encontrado nos dados');
     }
-    
+
     // Verificar se pelo menos uma disciplina tem alunos reprovados
     const disciplinasComReprovacoes = disciplinas.filter(d => d.alunosReprovados > 0);
     if (disciplinasComReprovacoes.length === 0) {
       throw new Error('Nenhuma disciplina com reprovações foi encontrada');
     }
-    
+
     return true;
   }
 
@@ -285,7 +384,7 @@ class DataProcessor {
    */
   gerarEstatisticas(dados) {
     const { disciplinas, alunos } = dados;
-    
+
     const stats = {
       totalDisciplinas: disciplinas.length,
       totalAlunos: alunos.length,
@@ -294,7 +393,7 @@ class DataProcessor {
       disciplinaMaisReprovada: disciplinas[0], // Já ordenado por número de reprovações
       alunoComMaisReprovacoes: alunos[0] // Já ordenado por número de reprovações
     };
-    
+
     return stats;
   }
 }
